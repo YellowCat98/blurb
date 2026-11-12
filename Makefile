@@ -11,3 +11,5 @@ Blurb_FILES = $(wildcard src/*.x src/*.m)
 Blurb_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+SUBPROJECTS += BlurbPrefs
+include $(THEOS_MAKE_PATH)/aggregate.mk

@@ -1,14 +1,35 @@
-#include <UIKit/UIKit.h>
+#include <rootless.h>
 
-@interface MTMaterialView : UIView
-+ (instancetype)materialViewWithRecipe:(long long)recipe options:(unsigned long long)options;
-@property (nonatomic, assign) double weighting;
-@end
+static double cachedMultiplier = 1.0;
+
+static void loadPrefs() {
+    CFStringRef bundleID = CFSTR("com.yellowcat98.ccblurb");
+    CFPreferencesAppSynchronize(bundleID);
+
+    CFPropertyListRef value = CFPreferencesCopyAppValue(CFSTR("kBlurMultiplier"), bundleID);
+
+    double multPercent = 100.0;
+
+    if (value != NULL) {
+        if (CFGetTypeID(value) == CFNumberGetTypeID()) {
+            CFNumberGetValue((CFNumberRef)value, kCFNumberDoubleType, &multPercent);
+        }
+        CFRelease(value);
+    }
+
+    cachedMultiplier = multPercent / 100.0;
+}
 
 %hook MTMaterialLayer
 
-- (double)weighting {
-    return %orig * 0.5;
+-(double)weighting {
+    return %orig * cachedMultiplier;
 }
 
 %end
+
+%ctor {
+    loadPrefs();
+
+    %init;
+}
